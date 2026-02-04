@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+@theme {
+  /* Refined Palette matching "Artist" Reference - Cream & Brown */
+  --color-primary: #76634C;
+  /* Earthy Muted Brown (Reference Button) */
+  --color-primary-light: #9C8974;
+  --color-primary-dark: #4E3E2F;
+  --color-accent: #E8E2D6;
+  /* Light grayish/beige border */
+  --color-background: #F8F5F1;
+  /* Warm Cream (Background from ref) */
+  --color-surface: #FFFFFF;
+  --color-text-main: #43362A;
+  /* Dark Espresso Brown (Text from ref) */
+  --color-text-muted: #8C8174;
+
+  /* Semantic Colors - Muted/Earthy tons */
+  --color-success: #6B8E23;
+  /* Olive */
+  --color-error: #B94A48;
+  /* Muted Red */
+  --color-warning: #D4A017;
+  /* Gold */
+  --color-info: #5F7D8E;
+  /* Slate */
+}
+
+:root {
+  /* Fonts: Serif for Headings "Artist Name" vibe, Sans for body */
+  font-family: 'Outfit', sans-serif;
+  --font-serif: 'Playfair Display', serif;
+
+  line-height: 1.6;
+  font-weight: 400;
+
+  color-scheme: light;
+  color: var(--color-text-main);
+  background-color: var(--color-background);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Apply Serif font to all headings to match "Artist Name" / "Artistic Vision" */
+h1,
+h2,
+h3,
+h4,
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: start;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--color-background);
+}
+
+#root {
+  width: 100%;
+}

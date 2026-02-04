@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+python-multipart
+python-dotenv
+pydantic-settings
+requests
+# ML dependencies
+# tensorflow-cpu; sys_platform != 'win32'
+# tensorflow; sys_platform == 'win32'
+opencv-python
+numpy
+passlib[bcrypt]
+python-jose[cryptography]
