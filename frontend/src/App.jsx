@@ -26,8 +26,7 @@ function App() {
 
         <Route path="/admin" element={<PrivateRoute><Layout /></PrivateRoute>}>
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="users" element={<Users showAdmins={false} />} />
-          <Route path="admins" element={<Users showAdmins={true} />} />
+          <Route path="users" element={<Users />} />
           <Route path="history" element={<History />} />
           <Route path="datasets" element={<Datasets />} />
           <Route path="feedback" element={<Feedback />} />

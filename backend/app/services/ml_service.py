@@ -25,7 +25,8 @@ class MLService:
                 self.model = tf.keras.models.load_model(self.model_path)
                 print(f"✅ Success: Loaded model from {self.model_path}")
             else:
-                print(f"⚠️ Warning: Model file not found at {self.model_path}. Using Mock Predictions.")
+                pass
+                # print(f"⚠️ Warning: Model file not found at {self.model_path}. Using Mock Predictions.")
         except Exception as e:
             print(f"❌ Error loading model: {e}. Defaulting to Mock Predictions.")
             self.model = None

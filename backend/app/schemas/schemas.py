@@ -13,10 +13,12 @@ class UserCreate(UserBase):
 class UserUpdate(UserBase):
     password: Optional[str] = None
     is_admin: bool = False
+    is_active: Optional[bool] = None
 
 class User(UserBase):
     user_id: int
     is_admin: bool = False
+    is_active: bool = True
     class Config:
         from_attributes = True
 

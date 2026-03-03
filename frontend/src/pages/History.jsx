@@ -57,7 +57,7 @@ const History = () => {
                             <tr key={item.id || index} className="hover:bg-[--color-background] transition-colors">
                                 <td className="p-5">
                                     <a
-                                        href={`http://localhost:8001/${item.filename}`}
+                                        href={`http://localhost:8000/${item.filename}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="inline-flex items-center space-x-2 text-[--color-primary] hover:text-[--color-primary-light] font-medium"

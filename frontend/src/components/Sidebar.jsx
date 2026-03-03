@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, History, Database, LogOut, Leaf, Shield, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Users, History, Database, LogOut, Leaf, MessageSquare } from 'lucide-react';
 
 const Sidebar = () => {
     const navigate = useNavigate();
@@ -12,7 +12,6 @@ const Sidebar = () => {
 
     const navItems = [
         { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
-        { name: 'Admins', path: '/admin/admins', icon: Shield },
         { name: 'Users', path: '/admin/users', icon: Users },
         { name: 'History', path: '/admin/history', icon: History },
         { name: 'Datasets', path: '/admin/datasets', icon: Database },

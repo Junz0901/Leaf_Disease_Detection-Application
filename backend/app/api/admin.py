@@ -103,6 +103,9 @@ def update_user(user_id: int, user_update: schemas.UserUpdate, db: Session = Dep
     user.full_name = user_update.username
     user.is_admin = user_update.is_admin
     
+    if user_update.is_active is not None:
+        user.is_active = user_update.is_active
+    
     if user_update.password:
         user.hashed_password = security.get_password_hash(user_update.password)
     
