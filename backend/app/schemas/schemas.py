@@ -49,12 +49,14 @@ class Dataset(DatasetBase):
         from_attributes = True
 
 class PredictionResponse(BaseModel):
-    id: int
+    id: Optional[int] = None
     filename: str
     disease: str
     confidence: float
     llm_explanation: Optional[str] = None
     timestamp: datetime
+    user_id: Optional[int] = None
+    user_email: Optional[str] = None
 
     class Config:
         from_attributes = True

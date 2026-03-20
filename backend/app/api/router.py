@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
+from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, Form
 import os
 from sqlalchemy.orm import Session
 from app.db.database import get_db
@@ -11,7 +11,7 @@ from datetime import datetime
 router = APIRouter()
 
 @router.post("/predict", response_model=PredictionResponse)
-async def predict_disease(file: UploadFile = File(...), db: Session = Depends(get_db)):
+async def predict_disease(file: UploadFile = File(...), user_email: str = Form(None), db: Session = Depends(get_db)):
     # 1. Save file to disk
     upload_dir = "uploads"
     os.makedirs(upload_dir, exist_ok=True)
@@ -29,11 +29,19 @@ async def predict_disease(file: UploadFile = File(...), db: Session = Depends(ge
     explanation = llm_service.get_disease_info(prediction["disease"])
     
     # 4. Save to DB
+    history_user_id = None
+    if user_email:
+        from app.models.models import User
+        user = db.query(User).filter(User.email == user_email).first()
+        if user:
+            history_user_id = user.user_id
+
     db_record = ClassificationHistory(
         image_path=file_path, 
         predicted_disease=prediction["disease"],
         confidence_score=prediction["confidence"],
-        timestamp=datetime.utcnow()
+        timestamp=datetime.utcnow(),
+        user_id=history_user_id
     )
     db.add(db_record)
     db.commit()

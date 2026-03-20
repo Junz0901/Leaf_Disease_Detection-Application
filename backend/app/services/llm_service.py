@@ -6,35 +6,35 @@ class LLMService:
         self.api_key = os.getenv("LLM_API_KEY")
         self.provider = "openai" # or "gemini", "huggingface"
 
-    def _call_openai(self, prompt: str):
+    def _call_gemini(self, prompt: str):
         """
-        Actual implementation for OpenAI
+        Implementation for Gemini 1.5 Flash Text Generation
         """
-        # Check if key is just a placeholder or empty
         if not self.api_key or "your_llm_api_key" in self.api_key:
              return None
 
         try:
-            headers = {
-                "Authorization": f"Bearer {self.api_key}",
-                "Content-Type": "application/json"
-            }
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={self.api_key}"
+            headers = {"Content-Type": "application/json"}
             data = {
-                "model": "gpt-3.5-turbo",
-                "messages": [{"role": "user", "content": prompt}]
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {"temperature": 0.7}
             }
-            response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=data)
-            response.raise_for_status() # Raise error for bad responses
-            return response.json()["choices"][0]["message"]["content"]
+            response = requests.post(url, headers=headers, json=data)
+            response.raise_for_status()
+            
+            # Parse Gemini's standard response
+            response_data = response.json()
+            return response_data['candidates'][0]['content']['parts'][0]['text']
         except Exception as e:
-            print(f"Error calling LLM provider: {e}")
+            print(f"Error calling Gemini provider: {e}")
             return None
 
     def get_disease_info(self, disease_name: str):
         prompt = f"Provide a brief 2-sentence explanation and 1 treatment for the plant disease: {disease_name}"
         
         # Try real call
-        real_response = self._call_openai(prompt)
+        real_response = self._call_gemini(prompt)
         if real_response:
             return real_response
             
@@ -43,7 +43,7 @@ class LLMService:
 
     def chat(self, message: str):
         # Try real call
-        real_response = self._call_openai(message)
+        real_response = self._call_gemini(message)
         if real_response:
             return real_response
 

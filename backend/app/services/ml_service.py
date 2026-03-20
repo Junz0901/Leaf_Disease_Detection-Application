@@ -1,9 +1,11 @@
-import numpy as np
 import os
-import cv2
-import random
+import base64
+import json
+import requests
+from dotenv import load_dotenv
 
-# List of classes your model will eventually predict
+load_dotenv()
+
 DISEASE_CLASSES = [
     "Apple___Apple_scab", "Apple___Black_rot", "Apple___Cedar_apple_rust", "Apple___healthy",
     "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot", "Corn_(maize)___Common_rust_", "Corn_(maize)___Northern_Leaf_Blight", "Corn_(maize)___healthy",
@@ -14,74 +16,78 @@ DISEASE_CLASSES = [
 
 class MLService:
     def __init__(self):
-        self.model = None
-        self.model_path = os.path.join("app", "models", "leaf_disease_model.h5") # Default path
-        self._load_model()
-
-    def _load_model(self):
-        try:
-            if os.path.exists(self.model_path):
-                import tensorflow as tf
-                self.model = tf.keras.models.load_model(self.model_path)
-                print(f"✅ Success: Loaded model from {self.model_path}")
-            else:
-                pass
-                # print(f"⚠️ Warning: Model file not found at {self.model_path}. Using Mock Predictions.")
-        except Exception as e:
-            print(f"❌ Error loading model: {e}. Defaulting to Mock Predictions.")
-            self.model = None
-
-    def preprocess_image(self, image_bytes: bytes):
-        """
-        Real image preprocessing using OpenCV.
-        Even without the model, this ensures the input file is a valid image.
-        """
-        # Convert bytes to numpy array
-        nparr = np.frombuffer(image_bytes, np.uint8)
-        
-        # Decode image
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        
-        if img is None:
-            raise ValueError("Could not decode image")
-
-        # Resize to standard model input size (e.g., 224x224)
-        img_resized = cv2.resize(img, (224, 224))
-        
-        # Normalize to [0, 1]
-        img_normalized = img_resized / 255.0
-        
-        # Add batch dimension (1, 224, 224, 3)
-        img_batch = np.expand_dims(img_normalized, axis=0)
-        
-        return img_batch
+        # We fetch the API key from your completely updated .env file!
+        self.api_key = os.getenv("LLM_API_KEY")
+        self.api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={self.api_key}"
 
     def predict(self, image_bytes: bytes):
         try:
-            # 1. Real Preprocessing
-            processed_image = self.preprocess_image(image_bytes)
-            
-            # 2. Prediction (Mock logic until model is loaded)
-            if self.model:
-                # predictions = self.model.predict(processed_image)
-                # predicted_class = DISEASE_CLASSES[np.argmax(predictions)]
-                # confidence = float(np.max(predictions))
-                pass
-            else:
-                # Simulate processing time
-                import time
-                time.sleep(1)
-                
-                # DATA_MOCK: Return a random disease for demo purposes
-                predicted_class = random.choice(DISEASE_CLASSES)
-                confidence = round(random.uniform(0.70, 0.99), 2)
+            if not self.api_key or self.api_key == "your_llm_api_key_here":
+                return {
+                    "disease": "Missing API Key", 
+                    "confidence": 0.0
+                }
 
-            return {
-                "disease": predicted_class,
-                "confidence": confidence
+            # 1. Encode the image so Gemini can read it over the internet!
+            encoded_image = base64.b64encode(image_bytes).decode('utf-8')
+
+            # 2. Incredible upgrade: We no longer limit to 25 classes! 
+            # We tell Gemini to identify ANY plant and ANY disease accurately!
+            prompt_text = "You are a rigorous plant disease expert AI. The user has uploaded an image. " \
+                          "1) If the image is CLEARLY NOT a plant or leaf (e.g. computer mouse, desk, face), respond with: " \
+                          "{\"disease\": \"Not a Plant\", \"confidence\": 1.0}. " \
+                          "2) If it IS a plant, identify the species and the disease (or 'healthy'). " \
+                          "Format the disease string as 'PlantName - DiseaseName' (e.g., 'Basil - Healthy', 'Tomato - Early Blight'). " \
+                          "Provide a realistic confidence score between 0.6 and 1.0. " \
+                          "You MUST return ONLY a valid JSON object with exactly two keys: 'disease' (string) and 'confidence' (float). Do not include markdown blocks."
+
+            payload = {
+                "contents": [
+                    {
+                        "parts": [
+                            {"text": prompt_text},
+                            {
+                                "inline_data": {
+                                    "mime_type": "image/jpeg",
+                                    "data": encoded_image
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "generationConfig": {
+                    "temperature": 0.2,
+                    "response_mime_type": "application/json", # Forces Gemini to output pure JSON!
+                }
             }
+
+            headers = {"Content-Type": "application/json"}
+            
+            # 3. Call the incredibly fast Google Gemini API
+            response = requests.post(self.api_url, headers=headers, json=payload)
+            response.raise_for_status()
+            
+            response_data = response.json()
+            raw_text = response_data['candidates'][0]['content']['parts'][0]['text'].strip()
+            
+            # Cleanup any markdown artifacts just in case
+            if raw_text.startswith("```json"):
+                raw_text = raw_text[7:]
+            if raw_text.endswith("```"):
+                raw_text = raw_text[:-3]
+                
+            prediction = json.loads(raw_text.strip())
+            
+            return {
+                "disease": prediction.get("disease", "Unknown"),
+                "confidence": prediction.get("confidence", 0.0)
+            }
+
         except Exception as e:
-            print(f"Error during prediction: {e}")
-            raise e
+            print(f"Error during Gemini API prediction: {e}")
+            return {
+                "disease": "Error processing image",
+                "confidence": 0.0
+            }
 
 ml_service = MLService()

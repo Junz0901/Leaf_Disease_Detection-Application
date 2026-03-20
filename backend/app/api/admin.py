@@ -31,13 +31,17 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
     
     activity_data = []
     for item in recent_activity:
+        user_email = item.user.email if hasattr(item, 'user') and item.user else None
+        
         activity_data.append({
             "id": item.id,
             "filename": item.image_path,
             "disease": item.predicted_disease,
             "confidence": item.confidence_score,
             "timestamp": item.timestamp,
-            "llm_explanation": None # or empty string
+            "llm_explanation": None, # or empty string
+            "user_id": item.user_id,
+            "user_email": user_email
         })
 
     return {
@@ -128,13 +132,17 @@ def read_history(skip: int = 0, limit: int = 100, db: Session = Depends(get_db))
     # Or better, let's just return a list of dicts that match the schema.
     res = []
     for h in history:
+        user_email = h.user.email if hasattr(h, 'user') and h.user else None
+        
         res.append({
             "id": h.id,
             "filename": h.image_path,
             "disease": h.predicted_disease,
             "confidence": h.confidence_score,
             "timestamp": h.timestamp,
-            "llm_explanation": "Saved record" 
+            "llm_explanation": "Saved record",
+            "user_id": h.user_id,
+            "user_email": user_email
         })
     return res
 
